@@ -1,6 +1,6 @@
 # dsp_blueprint_no_belt
 
-> thanks to (huww98)[https://github.com/huww98/dsp_blueprint_editor] for 蓝图解析代码
+> thanks to [huww98](https://github.com/huww98/dsp_blueprint_editor) for 蓝图解析代码
 
 戴森球计划无带蓝图转换工具 [链接](https://github.com/IcarusLIM/DSP-NoBelt)，适合一塔一物
 
@@ -8,19 +8,19 @@
 
 1. 游戏内建一个正常的蓝图
 
-!(new)[https://raw.githubusercontent.com/IcarusLIM/DSP-NoBelt/2ab9e47db1eed332c857abcb8e8c777020491191/imgs/step1.jpg]
+![new](https://raw.githubusercontent.com/IcarusLIM/DSP-NoBelt/main/imgs/step1.jpg)
 
 2. 删除多余传送带，并标记（标记方式见后文）
 
-!(cut)[https://raw.githubusercontent.com/IcarusLIM/DSP-NoBelt/2ab9e47db1eed332c857abcb8e8c777020491191/imgs/step2.jpg]
+![cut](https://raw.githubusercontent.com/IcarusLIM/DSP-NoBelt/main/imgs/step2.jpg)
 
 3. 复制蓝图代码，粘贴到本工具左侧输入框，点击“转换”，将右侧框的结果在游戏内新建蓝图保存
 
-!(trans)[https://raw.githubusercontent.com/IcarusLIM/DSP-NoBelt/2ab9e47db1eed332c857abcb8e8c777020491191/imgs/step3.jpg]
+![trans](https://raw.githubusercontent.com/IcarusLIM/DSP-NoBelt/main/imgs/step3.jpg)
 
 4. 拍下转换后的蓝图，传送带放入物品后正常运转
 
-!(Done)[https://raw.githubusercontent.com/IcarusLIM/DSP-NoBelt/2ab9e47db1eed332c857abcb8e8c777020491191/imgs/step4.jpg]
+![Done](https://raw.githubusercontent.com/IcarusLIM/DSP-NoBelt/main/imgs/step4.jpg)
 
 ## 代码逻辑
 
@@ -40,7 +40,7 @@
 
 > 对应上图制造台的标记方式
 
-需要标记 传送带的输入、输出节点，标记的标签固定选取“图标选取->信号”下的 0-4
+需要标记 传送带的输入、输出节点，标记的标签固定使用“图标选取->信号”下的 0-4
 
 0：分拣器输出到传送带  
 1-4：传送带输入到分拣器（因此最多支持4种不同输入）  
