@@ -2,7 +2,7 @@
 
 > thanks to [huww98](https://github.com/huww98/dsp_blueprint_editor) for 蓝图解析代码
 
-戴森球计划无带蓝图转换工具 [链接](https://github.com/IcarusLIM/DSP-NoBelt)，较适合一塔一物
+戴森球计划无带蓝图转换工具 [链接](https://icaruslim.github.io/DSP-NoBelt/)，较适合一塔一物
 
 ## 使用方法
 
