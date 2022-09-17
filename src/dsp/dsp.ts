@@ -59,13 +59,13 @@ function classifyInOut(beltMap: Map<number, number[]>, buildings: BlueprintBuild
             let head = idx, tail = idx;
             processed.add(idx)
             while (forward.has(tail)) {
-                tail = forward.get(tail)
+                tail = forward.get(tail)!
                 if (processed.has(tail))
                     return
                 processed.add(tail)
             }
             while (backward.has(head)) {
-                head = backward.get(head)
+                head = backward.get(head)!
                 if (processed.has(head))
                     return
                 processed.add(head)
@@ -76,15 +76,15 @@ function classifyInOut(beltMap: Map<number, number[]>, buildings: BlueprintBuild
                 const keyIn = key + ":in"
                 if (!beltMapInOut.has(keyIn))
                     beltMapInOut.set(keyIn, [])
-                beltMapInOut.get(keyIn).push(head)
-                head = forward.get(head)
+                beltMapInOut.get(keyIn)?.push(head)
+                head = forward.get(head)!
             }
             while (markSet.has(tail)) {
                 const keyOut = key + ":out"
                 if (!beltMapInOut.has(keyOut))
                     beltMapInOut.set(keyOut, [])
-                beltMapInOut.get(keyOut).push(tail)
-                tail = backward.get(tail)
+                beltMapInOut.get(keyOut)?.push(tail)
+                tail = backward.get(tail)!
             }
         })
 
@@ -216,12 +216,15 @@ export function convert(strData: string, eraseTag: boolean, recipe: number) {
         reservedBeltIds.forEach((val) => {
             beltMap.get(val)?.forEach(beltIdx => {
                 const beltParams = bp.buildings[beltIdx].parameters as BeltParameters
+                // @ts-ignore
                 delete beltParams.count
+                // @ts-ignore
                 delete beltParams.iconId
+
             })
         })
     }
-    
+
     if (recipe >= 0) {
         bp.buildings.forEach((building) => {
             if (allAssemblers.has(building.itemId)) {
