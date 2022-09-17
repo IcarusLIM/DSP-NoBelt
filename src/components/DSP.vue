@@ -1,14 +1,19 @@
 <script setup lang="ts">
+import { recipes } from '@/dsp/data/recipesData';
 import { ref } from 'vue';
-import { convert } from '../dsp/dsp'
+import { convert } from '@/dsp/dsp'
+
+const recipesRef = ref(recipes.map((val) => ({ id: val.id, name: val.name })))
+recipesRef.value.push({ id: -1, name: "--unset--" })
 
 const origin = ref("")
 const target = ref("")
-const errMsg = ref("")
+const erase = ref(false)
+const recipe = ref(-1)
 
 const onTrans = () => {
   try {
-    target.value = convert(origin.value, true)
+    target.value = convert(origin.value, erase.value, recipe.value)
   } catch (error) {
     alert(error)
     throw error;
@@ -29,19 +34,28 @@ const onCopy = () => {
 <template>
 
   <div class="main-content">
-    <div v-if="errMsg">{{errMsg}}</div>
     <div class="content">
       <div class="col">
         <div class="header">
-          <button @click="onTrans">转换</button>
+
+          <label for="erase">清除标号</label>
+          <input v-model="erase" type="checkbox" id="erase">
+          <label for="erase">设置配方</label>
+          <select name="recipe" v-model="recipe" style="width:100px;">
+            <option v-for="r in recipesRef" :value="r.id">{{r.name}}</option>
+            <option value="purple">Purple </option>
+          </select>
+
+
+          <button @click="onTrans" class="ml-auto">转换</button>
         </div>
-        <textarea v-model="origin" style="width:90%" rows="8" placeholder="请将原蓝图代码粘贴到此处"></textarea>
+        <textarea v-model="origin" style="width:100%" rows="8" placeholder="请将原蓝图代码粘贴到此处"></textarea>
       </div>
       <div class="col">
         <div class="header">
-          <button @click="onCopy">复制</button>
+          <button @click="onCopy" class="ml-auto">复制</button>
         </div>
-        <textarea id="targetBp" v-model="target" rows="8" style="width:90%"></textarea>
+        <textarea id="targetBp" v-model="target" rows="8" style="width:100%"></textarea>
       </div>
     </div>
   </div>
@@ -75,6 +89,27 @@ const onCopy = () => {
 
 .content .col .header {
   margin: 10px 0;
+  display: flex;
+}
+
+.header .ml-auto {
+  margin-left: auto;
+}
+
+@media (min-width: 1024px) {
+  .content .col {
+    padding: 15px;
+  }
+}
+
+label+input,
+label+select {
+  margin-left: 5px;
+}
+
+input+label,
+select+label {
+  margin-left: 10px;
 }
 </style>
   

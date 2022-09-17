@@ -1,3 +1,4 @@
+import { allAssemblers } from "./data/items"
 import { fromStr, toStr, type BeltParameters, type BlueprintBuilding, type BlueprintData, type InserterParameters } from "./parser"
 
 const beltIds = new Set([2001, 2002, 2003])
@@ -28,17 +29,67 @@ function addInserterToMap(map: Map<string, Array<number>>, building: BlueprintBu
 function adaptMirror(inputInserterMap: Map<string, number[]>, outputInserterMap: Map<string, Array<number>>) {
     if (outputInserterMap.size > 1) {
         // 产物分拣器位置不唯一，视为设备存在镜像旋转180的情况
-        console.log(inputInserterMap)
-        for (const key of inputInserterMap.keys()) {
+        inputInserterMap.forEach((val, key) => {
             const splited = key.split(":")
             const mirrorKey = Math.abs(Number(splited[0])) + ":" + Math.abs(Number(splited[1])) + ":" + splited[2];
             if (key !== mirrorKey) {
-                const buildings = inputInserterMap.get(key) || [];
+                const buildings = val;
                 inputInserterMap.get(mirrorKey)?.push(...buildings);
                 inputInserterMap.delete(key)
             }
-        }
+        })
     }
+}
+
+function classifyInOut(beltMap: Map<number, number[]>, buildings: BlueprintBuilding[]) {
+    const forward = new Map<number, number>()
+    const backward = new Map<number, number>()
+    buildings.forEach((building) => {
+        if (beltIds.has(building.itemId) && building.outputObjIdx >= 0 && beltIds.has(buildings[building.outputObjIdx].itemId)) {
+            forward.set(building.index, building.outputObjIdx);
+            backward.set(building.outputObjIdx, building.index)
+        }
+    })
+    const beltMapInOut = new Map<string, number[]>();
+    beltMap.forEach((val, key) => {
+        if (reservedBeltIds.has(key))
+            return;
+        const processed = new Set<number>();
+        val.forEach((idx) => {
+            let head = idx, tail = idx;
+            processed.add(idx)
+            while (forward.has(tail)) {
+                tail = forward.get(tail)
+                if (processed.has(tail))
+                    return
+                processed.add(tail)
+            }
+            while (backward.has(head)) {
+                head = backward.get(head)
+                if (processed.has(head))
+                    return
+                processed.add(head)
+            }
+
+            const markSet = new Set(val);
+            while (markSet.has(head)) {
+                const keyIn = key + ":in"
+                if (!beltMapInOut.has(keyIn))
+                    beltMapInOut.set(keyIn, [])
+                beltMapInOut.get(keyIn).push(head)
+                head = forward.get(head)
+            }
+            while (markSet.has(tail)) {
+                const keyOut = key + ":out"
+                if (!beltMapInOut.has(keyOut))
+                    beltMapInOut.set(keyOut, [])
+                beltMapInOut.get(keyOut).push(tail)
+                tail = backward.get(tail)
+            }
+        })
+
+    });
+    return beltMapInOut
 }
 
 function classifyBuildings(buildings: BlueprintBuilding[]) {
@@ -119,11 +170,12 @@ function modifyInserter(buildings: BlueprintBuilding[], belts: Array<number>, in
 }
 
 function modifyTagged(buildings: BlueprintBuilding[], beltMap: Map<number, number[]>, inputInserterMap: Map<string, number[]>, outputInserterMap: Map<string, number[]>) {
+    const beltMapInOut = classifyInOut(beltMap, buildings)
     inputInserterMap.forEach((val, key) => {
-        modifyInserter(buildings, beltMap.get(Number(key)) || [], val, "input")
+        modifyInserter(buildings, beltMapInOut.get(key + ":out") || [], val, "input")
     })
     outputInserterMap.forEach((val, key) => {
-        modifyInserter(buildings, beltMap.get(Number(key)) || [], val, "output")
+        modifyInserter(buildings, beltMapInOut.get(key + ":in") || [], val, "output")
     })
 }
 
@@ -150,8 +202,10 @@ function modifyReserved(buildings: BlueprintBuilding[], beltMap: Map<number, num
     }
 }
 
-export function convert(strData: string, eraseTag: boolean) {
+export function convert(strData: string, eraseTag: boolean, recipe: number) {
     const bp = fromStr(strData)
+
+    console.log(JSON.stringify(bp, null, 2))
 
     const { beltMap, inputInserterMap, outputInserterMap, inputInserterTaggedMap, outputInserterTaggedMap } = classifyBuildings(bp.buildings)
 
@@ -159,7 +213,21 @@ export function convert(strData: string, eraseTag: boolean) {
     modifyTagged(bp.buildings, beltMap, inputInserterTaggedMap, outputInserterTaggedMap)
 
     if (eraseTag) {
-        // todo
+        reservedBeltIds.forEach((val) => {
+            beltMap.get(val)?.forEach(beltIdx => {
+                const beltParams = bp.buildings[beltIdx].parameters as BeltParameters
+                delete beltParams.count
+                delete beltParams.iconId
+            })
+        })
+    }
+    
+    if (recipe >= 0) {
+        bp.buildings.forEach((building) => {
+            if (allAssemblers.has(building.itemId)) {
+                building.recipeId = recipe
+            }
+        })
     }
 
     return toStr(bp)
