@@ -4,7 +4,7 @@ import { ref } from 'vue';
 import { convert } from '@/dsp/dsp'
 
 const recipesRef = ref(recipes.map((val) => ({ id: val.id, name: val.name })))
-recipesRef.value.push({ id: -1, name: "--unset--" })
+recipesRef.value.unshift({ id: -1, name: "--unset--" })
 
 const origin = ref("")
 const target = ref("")
@@ -43,7 +43,6 @@ const onCopy = () => {
           <label for="erase">设置配方</label>
           <select name="recipe" v-model="recipe" style="width:100px;">
             <option v-for="r in recipesRef" :value="r.id">{{r.name}}</option>
-            <option value="purple">Purple </option>
           </select>
 
 
