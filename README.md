@@ -53,7 +53,7 @@
 
 传送带起始端的连续标记作为爪子输出的位置，末端连续标记作为爪子拿取位置，其他标记不识别，如下图（第二条传送带为正确标记，第三条为错误标记）
 
-![Done](https://gitee.com/Ghamster/dsp-no-belt/raw/master/imgs/eg1.jpg)
+![Example1](https://gitee.com/Ghamster/dsp-no-belt/raw/master/imgs/eg1.jpg)
 
 *附测试用蓝图代码*：
 
