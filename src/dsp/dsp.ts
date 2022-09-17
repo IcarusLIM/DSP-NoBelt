@@ -114,9 +114,15 @@ function classifyBuildings(buildings: BlueprintBuilding[]) {
             beltMap.get(iconId)?.push(building.index)
         } else if (inserterIds.has(building.itemId)) {
             let mode = null;
-            if (building.outputObjIdx < 0 || building.outputToSlot === -1) {
+            if (building.outputObjIdx < 0) {
                 mode = "output"
-            } else if (building.inputObjIdx < 0 || building.inputFromSlot === -1) {
+            } else if (building.inputObjIdx < 0) {
+                mode = "input"
+            } else if(building.outputToSlot === -1 && building.inputFromSlot === -1){
+                continue // inserter -> belt -> inserter
+            }else if (building.outputToSlot === -1) {
+                mode = "output"
+            } else if (building.inputFromSlot === -1) {
                 mode = "input"
             } else {
                 throw (new Error("Unknown inserter: \n" + JSON.stringify(building, null, 2)))
@@ -148,7 +154,6 @@ function classifyBuildings(buildings: BlueprintBuilding[]) {
 
 function modifyInserter(buildings: BlueprintBuilding[], belts: Array<number>, inserters: Array<number>, mode: "input" | "output") {
     const per = Math.ceil(inserters.length / belts.length)
-    console.log("modifyInserter", mode, per)
     let i = 0, j = 0;
     while (i < belts.length) {
         let count = 0
