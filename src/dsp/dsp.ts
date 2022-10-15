@@ -7,7 +7,7 @@ const reservedBeltIds = new Set([600, 601, 602, 603, 604])
 const stationIds = new Set([2103, 2104])
 
 function slotPerSide(buildingId: number) {
-    return buildingId === 2309 ? 4 : 3 // 化工厂一侧4个接口
+    return buildingId === 2309 || buildingId === 2309 ? 4 : 3 // 化工厂一侧4个接口
 }
 
 function isConnectToStation(buildings: BlueprintBuilding[], beltIdx: number) {
@@ -118,9 +118,9 @@ function classifyBuildings(buildings: BlueprintBuilding[]) {
                 mode = "output"
             } else if (building.inputObjIdx < 0) {
                 mode = "input"
-            } else if(building.outputToSlot === -1 && building.inputFromSlot === -1){
+            } else if (building.outputToSlot === -1 && building.inputFromSlot === -1) {
                 continue // inserter -> belt -> inserter
-            }else if (building.outputToSlot === -1) {
+            } else if (building.outputToSlot === -1) {
                 mode = "output"
             } else if (building.inputFromSlot === -1) {
                 mode = "input"

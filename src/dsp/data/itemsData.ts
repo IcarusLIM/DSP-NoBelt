@@ -107,6 +107,7 @@ export const items: Item[] = [
     {id: 2307, models: [61], name: '原油萃取站', icon: 'oil-extractor', grid: [2, 3, 7]},
     {id: 2308, models: [63], name: '原油精炼厂', icon: 'oil-refinery', grid: [2, 3, 8]},
     {id: 2309, models: [64], name: '化工厂', icon: 'chemical-plant', grid: [2, 4, 8]},
+    {id: 2317, models: [376], name: '量子化工厂', icon: 'chemical-plant-2', grid: [2, 4, 8]},
     {id: 2314, models: [119], name: '分馏塔', icon: 'fractionator', grid: [2, 4, 7]},
     {id: 2205, models: [55], name: '太阳能板', icon: 'solar-panel', grid: [2, 1, 6]},
     {id: 2206, models: [46], name: '蓄电器', icon: 'accumulator', grid: [2, 4, 10]},
