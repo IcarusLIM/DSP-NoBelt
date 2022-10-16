@@ -34,6 +34,8 @@ function adaptMirror(inputInserterMap: Map<string, number[]>, outputInserterMap:
             const mirrorKey = Math.abs(Number(splited[0])) + ":" + Math.abs(Number(splited[1])) + ":" + splited[2];
             if (key !== mirrorKey) {
                 const buildings = val;
+                if (!inputInserterMap.has(mirrorKey))
+                    inputInserterMap.set(mirrorKey, [])
                 inputInserterMap.get(mirrorKey)?.push(...buildings);
                 inputInserterMap.delete(key)
             }
