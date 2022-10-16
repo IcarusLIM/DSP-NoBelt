@@ -194,6 +194,8 @@ export interface StationParameters {
     deliveryAmountOfDrones: number;
     deliveryAmountOfShips: number;
     pilerCount: number;
+    fillDrones: number;
+    fillShips: number;
 }
 export interface AdvancedMiningMachineParameters extends StationParameters {
     miningSpeed: number;
@@ -218,6 +220,8 @@ function stationParamsParser(desc: typeof stationDesc): ParamParser<StationParam
             setParam(a, base + 6, p.deliveryAmountOfDrones);
             setParam(a, base + 7, p.deliveryAmountOfShips);
             setParam(a, base + 8, p.pilerCount);
+            setParam(a, base + 10, p.fillDrones);
+            setParam(a, base + 11, p.fillShips);
             {
                 const {base, stride} = stationParamsMeta.storage;
                 for (let i = 0; i < desc.maxItemKind; i++) {
@@ -250,6 +254,8 @@ function stationParamsParser(desc: typeof stationDesc): ParamParser<StationParam
                 deliveryAmountOfDrones: getParam(a, base + 6),
                 deliveryAmountOfShips:  getParam(a, base + 7),
                 pilerCount:             getParam(a, base + 8),
+                fillDrones:             getParam(a, base + 10),
+                fillShips:              getParam(a, base + 11),
             };
             {
                 const {base, stride} = stationParamsMeta.storage;
