@@ -2,18 +2,23 @@
 import { recipes } from '@/dsp/data/recipesData';
 import { ref } from 'vue';
 import { convert } from '@/dsp/dsp'
+import { items } from '@/dsp/data/itemsData';
+import { isBelt } from '@/dsp/data/items';
 
 const recipesRef = ref(recipes.map((val) => ({ id: val.id, name: val.name })))
 recipesRef.value.unshift({ id: -1, name: "--unset--" })
+const beltRef = ref(items.filter(i => isBelt(i.id)).map(i => ({ id: i.id, name: i.name })))
+beltRef.value.unshift({ id: -1, name: "-" })
 
 const origin = ref("")
 const target = ref("")
 const erase = ref(false)
 const recipe = ref(-1)
+const remove = ref(-1)
 
 const onTrans = () => {
   try {
-    target.value = convert(origin.value, erase.value, recipe.value)
+    target.value = convert(origin.value, erase.value, recipe.value, remove.value)
   } catch (error) {
     alert(error)
     throw error;
@@ -40,9 +45,13 @@ const onCopy = () => {
 
           <label for="erase">清除标号</label>
           <input v-model="erase" type="checkbox" id="erase">
-          <label for="erase">设置配方</label>
+          <label for="recipe">设置配方</label>
           <select name="recipe" v-model="recipe" style="width:100px;">
             <option v-for="r in recipesRef" :value="r.id">{{r.name}}</option>
+          </select>
+          <label for="removeBelt">移除传送带</label>
+          <select name="removeBelt" v-model="remove" style="width:60px;">
+            <option v-for="r in beltRef" :value="r.id">{{r.name}}</option>
           </select>
 
 
@@ -108,7 +117,7 @@ label+select {
 
 input+label,
 select+label {
-  margin-left: 10px;
+  margin-left: 12px;
 }
 </style>
   

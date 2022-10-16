@@ -129,3 +129,9 @@ export const items: Item[] = [
     {id: 6005, models: [], name: '引力矩阵', icon: 'g-matrix', grid: [1, 7, 5]},
     {id: 6006, models: [], name: '宇宙矩阵', icon: 'u-matrix', grid: [1, 7, 6]},
 ];
+
+export const itemsMap = new Map<number, Item>();
+
+for (const i of items) {
+    itemsMap.set(i.id, i);
+}

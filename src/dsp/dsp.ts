@@ -1,10 +1,8 @@
-import { allAssemblers } from "./data/items"
-import { fromStr, toStr, type BeltParameters, type BlueprintBuilding, type BlueprintData, type InserterParameters } from "./parser"
+import { allAssemblers, isBelt, isInserter, isStation } from "./data/items"
+import { recipesMap } from "./data/recipesData"
+import { fromStr, toStr, type BeltParameters, type BlueprintBuilding, type StationParameters } from "./parser"
 
-const beltIds = new Set([2001, 2002, 2003])
-const inserterIds = new Set([2011, 2012, 2013])
 const reservedBeltIds = new Set([600, 601, 602, 603, 604])
-const stationIds = new Set([2103, 2104])
 
 function slotPerSide(buildingId: number) {
     return buildingId === 2309 || buildingId === 2309 ? 4 : 3 // 化工厂一侧4个接口
@@ -12,7 +10,7 @@ function slotPerSide(buildingId: number) {
 
 function isConnectToStation(buildings: BlueprintBuilding[], beltIdx: number) {
     const belt = buildings[beltIdx];
-    return (belt.inputObjIdx >= 0 && stationIds.has(buildings[belt.inputObjIdx].itemId)) || (belt.outputObjIdx >= 0 && stationIds.has(buildings[belt.outputObjIdx].itemId))
+    return (belt.inputObjIdx >= 0 && isStation(buildings[belt.inputObjIdx].itemId)) || (belt.outputObjIdx >= 0 && isStation(buildings[belt.outputObjIdx].itemId))
 }
 
 function addInserterToMap(map: Map<string, Array<number>>, building: BlueprintBuilding, key?: string, slotId?: number) {
@@ -47,7 +45,7 @@ function classifyInOut(beltMap: Map<number, number[]>, buildings: BlueprintBuild
     const forward = new Map<number, number>()
     const backward = new Map<number, number>()
     buildings.forEach((building) => {
-        if (beltIds.has(building.itemId) && building.outputObjIdx >= 0 && beltIds.has(buildings[building.outputObjIdx].itemId)) {
+        if (isBelt(building.itemId) && building.outputObjIdx >= 0 && isBelt(buildings[building.outputObjIdx].itemId)) {
             forward.set(building.index, building.outputObjIdx);
             backward.set(building.outputObjIdx, building.index)
         }
@@ -104,7 +102,7 @@ function classifyBuildings(buildings: BlueprintBuilding[]) {
     const outputInserterTaggedMap = new Map<string, Array<number>>()
 
     for (const building of buildings) {
-        if (beltIds.has(building.itemId)) {
+        if (isBelt(building.itemId)) {
             if (isConnectToStation(buildings, building.index))
                 continue
             const beltParams = building.parameters as BeltParameters
@@ -114,7 +112,7 @@ function classifyBuildings(buildings: BlueprintBuilding[]) {
             if (!beltMap.has(iconId))
                 beltMap.set(iconId, [])
             beltMap.get(iconId)?.push(building.index)
-        } else if (inserterIds.has(building.itemId)) {
+        } else if (isInserter(building.itemId)) {
             let mode = null;
             if (building.outputObjIdx < 0) {
                 mode = "output"
@@ -209,11 +207,60 @@ function modifyReserved(buildings: BlueprintBuilding[], beltMap: Map<number, num
     }
 }
 
-export function convert(strData: string, eraseTag: boolean, recipe: number) {
+function removeBelt(buildings: BlueprintBuilding[], beltItemId: number) {
+    const toRemoveIdxs = new Set<number>()
+    for (const building of buildings) {
+        if (building.itemId === beltItemId)
+            toRemoveIdxs.add(building.index)
+    }
+    const indexMap = new Map<number, number>();
+    for (let i = 0, removed = 0; i < buildings.length; i++) {
+        if (toRemoveIdxs.has(i)) {
+            removed++;
+            indexMap.set(i, -1)
+        } else {
+            indexMap.set(i, i - removed);
+        }
+    }
+    const buildingsFiltered = buildings.filter((building) => !toRemoveIdxs.has(building.index));
+    toRemoveIdxs.forEach(idx => {
+        function clearStation(station: BlueprintBuilding, slot: number) {
+            (station.parameters as StationParameters).slots[slot] = { dir: 0, storageIdx: 0 }
+        }
+        const building = buildings[idx]
+        if (building.outputObjIdx >= 0) {
+            const output = buildings[building.outputObjIdx]
+            if (isStation(output.itemId)) {
+                clearStation(output, building.outputToSlot)
+            }
+        }
+        if (building.inputObjIdx >= 0) {
+            const input = buildings[building.inputObjIdx]
+            if (isStation(input.itemId)) {
+                clearStation(input, building.inputFromSlot)
+            }
+        }
+    })
+    buildingsFiltered.forEach((building) => {
+        building.index = indexMap.get(building.index) || building.index
+        if (toRemoveIdxs.has(building.outputObjIdx))
+            building.outputToSlot = 0;
+        if (toRemoveIdxs.has(building.inputObjIdx))
+            building.inputFromSlot = 0;
+        building.outputObjIdx = indexMap.get(building.outputObjIdx) || building.outputObjIdx;
+        building.inputObjIdx = indexMap.get(building.inputObjIdx) || building.inputObjIdx
+
+    })
+    return buildingsFiltered;
+}
+
+export function convert(strData: string, eraseTag: boolean, recipeId: number, removeBeltId: number) {
     const bp = fromStr(strData)
 
     console.log(JSON.stringify(bp, null, 2))
 
+    if (removeBeltId >= 0)
+        bp.buildings = removeBelt(bp.buildings, removeBeltId)
     const { beltMap, inputInserterMap, outputInserterMap, inputInserterTaggedMap, outputInserterTaggedMap } = classifyBuildings(bp.buildings)
 
     modifyReserved(bp.buildings, beltMap, inputInserterMap, outputInserterMap)
@@ -232,12 +279,17 @@ export function convert(strData: string, eraseTag: boolean, recipe: number) {
         })
     }
 
-    if (recipe >= 0) {
+    if (recipeId >= 0) {
         bp.buildings.forEach((building) => {
             if (allAssemblers.has(building.itemId)) {
-                building.recipeId = recipe
+                building.recipeId = recipeId
             }
         })
+        const recipe = recipesMap.get(recipeId)
+        if (bp.header.shortDesc === "新蓝图" && recipe !== undefined) {
+            bp.header.shortDesc = recipe.name
+            bp.header.icons[0] = recipe.to[0].item.id
+        }
     }
 
     return toStr(bp)

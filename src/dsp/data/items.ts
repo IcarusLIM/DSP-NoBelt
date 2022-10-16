@@ -1,12 +1,3 @@
-import { items } from './itemsData';
-import type { Item } from './types';
-
-export const itemsMap = new Map<number, Item>();
-
-for (const i of items) {
-    itemsMap.set(i.id, i);
-}
-
 export function isBelt(id: number) {
     return id >= 2001 && id <= 2003;
 }
